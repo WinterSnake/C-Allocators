@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "string.h"
+
 #include "allocators.h"
 
 #define BUFFER_CAPACITY 1024
@@ -22,9 +23,16 @@ int main(int argc, char** argv)
 	Allocator fbaAlloc = fba.allocator;
 	char* ptr1 = fbaAlloc.alloc(&fbaAlloc, 14);
 	strcpy(ptr1, "Hello, World!");
-	printf("%s\n", ptr1);
 	char* ptr2 = fbaAlloc.alloc(&fbaAlloc, 6);
 	strcpy(ptr2, "Marly");
-	printf("%s | %s\n", ptr1, ptr2);
+	printf("%s says %s\n", ptr2, ptr1);
+	fbaAlloc.free(&fbaAlloc, ptr2);
+	char* ptr3 = fbaAlloc.alloc(&fbaAlloc, 33);
+	strcpy(ptr3, "The cat jumps over the small dog");
+	printf("%s\n", ptr2);
+	Allocator_FixedBuffer_Reset(&fba);
+	char* ptr4 = fbaAlloc.alloc(&fbaAlloc, 16);
+	strcpy(ptr4, "This line works");
+	printf("%s\n", ptr1);
 	return 0;
 }
