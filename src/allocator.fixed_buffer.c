@@ -11,7 +11,7 @@
 static void* Allocator_FixedBuffer_Alloc(Allocator*, size_t);
 static void Allocator_FixedBuffer_Free(Allocator*, void*);
 
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, uint8_t* buffer, size_t size)
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, void* buffer, size_t size)
 {
 	*fba = (FixedBufferAllocator) {
 		.memory=buffer,

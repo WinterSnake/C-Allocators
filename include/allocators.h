@@ -21,12 +21,12 @@ typedef struct Allocator
 typedef struct Allocator_FixedBuffer
 {
 	Allocator allocator;
-	uint8_t* memory;
+	void* memory;
 	size_t offset;
 	size_t size;
 } FixedBufferAllocator;
 
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, uint8_t* buffer, size_t size);
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, void* buffer, size_t size);
 void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fba);
 
 #endif
