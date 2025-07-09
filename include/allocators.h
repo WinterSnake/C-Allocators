@@ -12,8 +12,9 @@
 
 typedef struct Allocator
 {
-	void* (*alloc)(void*, size_t);
-	void (*free)(void*);
+	void* context;
+	void* (*alloc)(struct Allocator*, size_t);
+	void (*free)(struct Allocator*, void*);
 } Allocator;
 
 // Fixed Buffer
@@ -25,6 +26,7 @@ typedef struct Allocator_FixedBuffer
 	size_t size;
 } FixedBufferAllocator;
 
-FixedBufferAllocator Allocator_FixedBuffer_New(uint8_t* buffer, size_t size);
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, uint8_t* buffer, size_t size);
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fba);
 
 #endif

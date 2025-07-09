@@ -6,27 +6,33 @@
 */
 
 #include "allocators.h"
+#include "stdio.h"
 
-static void* Allocator_FixedBuffer_Alloc(void* ctx, size_t size);
-static void Allocator_FixedBuffer_Free(void* ctx);
+static void* Allocator_FixedBuffer_Alloc(Allocator*, size_t);
+static void Allocator_FixedBuffer_Free(Allocator*, void*);
 
-FixedBufferAllocator Allocator_FixedBuffer_New(uint8_t* buffer, size_t size)
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, uint8_t* buffer, size_t size)
 {
-	FixedBufferAllocator fba = {
+	*fba = (FixedBufferAllocator) {
 		.memory=buffer,
 		.offset=0,
 		.size=size,
 		.allocator={
+			.context=fba,
 			.alloc=Allocator_FixedBuffer_Alloc,
 			.free=Allocator_FixedBuffer_Free,
 		}
 	};
-	return fba;
 }
 
-static void* Allocator_FixedBuffer_Alloc(void* ctx, size_t size)
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fba)
 {
-	FixedBufferAllocator* fba = (FixedBufferAllocator*)ctx;
+	fba->offset = 0;
+}
+
+static void* Allocator_FixedBuffer_Alloc(Allocator* allocator, size_t size)
+{
+	FixedBufferAllocator* fba = (FixedBufferAllocator*)allocator->context;
 	if (size > fba->size || size > fba->size - fba->offset)
 		return NULL;
 	void* ptr = fba->memory + fba->offset;
@@ -34,7 +40,9 @@ static void* Allocator_FixedBuffer_Alloc(void* ctx, size_t size)
 	return ptr;
 }
 
-static void Allocator_FixedBuffer_Free(void* ctx)
+// No-Op (Store size when alloc?)
+static void Allocator_FixedBuffer_Free(Allocator* allocator, void* memory)
 {
-	((FixedBufferAllocator*)ctx)->offset = 0;
+	(void)allocator;
+	(void)memory;
 }
