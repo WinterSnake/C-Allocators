@@ -34,5 +34,13 @@ int main(int argc, char** argv)
 	char* ptr4 = fbaAlloc.alloc(&fbaAlloc, 16);
 	strcpy(ptr4, "This line works");
 	printf("%s\n", ptr1);
+	fbaAlloc.resize(&fbaAlloc, ptr4, 12);
+	char* ptr5 = fbaAlloc.alloc(&fbaAlloc, 18);
+	strcpy(ptr5, "This will overlap");
+	printf("%s : %s\n", ptr4, ptr5);
+	if (!fbaAlloc.resize(&fbaAlloc, ptr4, 16))
+	{
+		printf("Cannot resize non-last element in buffer!\n");
+	}
 	return 0;
 }

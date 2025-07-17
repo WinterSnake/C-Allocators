@@ -7,6 +7,7 @@
 #ifndef ALLOCATORS_H
 #define ALLOCATORS_H
 
+#include "stdbool.h"
 #include "stddef.h"
 #include "stdint.h"
 
@@ -14,6 +15,7 @@ typedef struct Allocator
 {
 	void* context;
 	void* (*alloc)(struct Allocator*, size_t);
+	bool (*resize)(struct Allocator*, void*, size_t);
 	void (*free)(struct Allocator*, void*);
 } Allocator;
 
