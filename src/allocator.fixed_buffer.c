@@ -37,6 +37,7 @@ void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, void* buffer, size_t 
 
 void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fba)
 {
+	fba->cursor = 0;
 	fba->memory.current = fba->memory.buffer;
 }
 
