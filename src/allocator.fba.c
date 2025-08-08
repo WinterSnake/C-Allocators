@@ -18,21 +18,20 @@ static const AllocatorVTable vtable = {
 	.alloc=allocate,
 };
 
-// Public API
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, uint8_t* buffer, size_t capacity)
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, uint8_t* buffer, size_t capacity)
 {
 	*fba = (FixedBufferAllocator){
 		.buffer=buffer,
-		.capacity=capacity,
 		.index=0,
+		.capacity=capacity,
 		.allocator={
 			.context=fba,
 			.vtable=&vtable,
-		}
+		},
 	};
 }
 
-void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fba)
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba)
 {
 	fba->index = 0;
 }

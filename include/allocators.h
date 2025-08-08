@@ -11,9 +11,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Allocators
 typedef struct AllocatorVTable
 {
+	// Size will change towards how much memory was actually allocated
 	void* (*alloc)(void* const, size_t*);
 } AllocatorVTable;
 
@@ -25,17 +25,17 @@ typedef struct Allocator
 
 void* Allocator_Alloc(const Allocator* const allocator, size_t size);
 
-// Fixed Buffer Array
+// Fixed Buffer
 typedef struct Allocator_FixedBuffer
 {
 	uint8_t* buffer;
-	size_t capacity;
 	size_t index;
+	size_t capacity;
 	Allocator allocator;
 } FixedBufferAllocator;
 
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* fba, uint8_t* buffer, size_t capacity);
-void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fba);
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, uint8_t* buffer, size_t capacity);
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba);
 
 // Page Allocator
 extern const Allocator PageAllocator;
