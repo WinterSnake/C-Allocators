@@ -10,17 +10,18 @@
 #include "allocators.h"
 
 extern size_t align(size_t, size_t);
-static void* allocate(Allocator* const, size_t);
+static void* allocate(void* const, size_t);
 
 static const AllocatorVTable vtable = {
 	.alloc=allocate
 };
 
 Allocator PageAllocator = {
+	.context=NULL,
 	.vtable=&vtable,
 };
 
-static void* allocate(Allocator* const context, size_t size)
+static void* allocate(void* const context, size_t size)
 {
 	(void)context;
 	size = align(size, sysconf(_SC_PAGESIZE));

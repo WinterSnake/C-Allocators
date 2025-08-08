@@ -16,8 +16,8 @@
 struct Allocator;
 typedef struct AllocatorVTable
 {
-	// - alloc  [allocator ctx, size_t size](void*)
-	void* (*alloc)(struct Allocator* const, size_t);
+	// - alloc  [void* ctx, size_t size](void*)
+	void* (*alloc)(void* const, size_t);
 	// - resize [allocator ctx](bool)
 	// - remap  [allocator ctx](void*)
 	// - free   [allocator ctx](void)
@@ -28,6 +28,8 @@ typedef struct Allocator
 	void* const context;
 	const AllocatorVTable* const vtable;
 } Allocator;
+
+void* Allocator_Alloc(Allocator* const allocator, size_t size);
 
 // Page Allocator
 extern Allocator PageAllocator;
