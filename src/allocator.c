@@ -4,7 +4,6 @@
 	Written By: Ryan Smith
 */
 
-#include <stdio.h>
 #include "allocators.h"
 
 size_t align(size_t size, size_t align)

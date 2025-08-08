@@ -9,8 +9,9 @@ mkdir --parents ".build/examples"
 # -Library
 ALLOCLIB=".build/liballoc.a"
 $CC $FLAGS -I "include" -c -o ".build/allocator.o" "src/allocator.c"
+$CC $FLAGS -I "include" -c -o ".build/allocator.fba.o" "src/allocator.fba.c"
 $CC $FLAGS -I "include" -c -o ".build/allocator.page.o" "src/allocator.page.c"
-$ARCHIVE crs $ALLOCLIB ".build/allocator.o" ".build/allocator.page.o"
+$ARCHIVE crs $ALLOCLIB ".build/allocator.o" ".build/allocator.fba.o" ".build/allocator.page.o"
 
 # Examples
 $CC $FLAGS -I "include" -o ".build/examples/allocator.arena" "examples/allocator.arena.c" $ALLOCLIB
