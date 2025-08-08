@@ -1,6 +1,8 @@
 /*
 	Allocator Library
 	- Fixed Buffer
+
+	Written By: Ryan Smith
 */
 
 #include "allocators.h"

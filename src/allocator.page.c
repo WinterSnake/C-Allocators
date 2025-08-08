@@ -1,6 +1,8 @@
 /*
 	Allocator Library
-	- Page Allocator
+	- Page
+
+	Written By: Ryan Smith
 */
 
 #include <sys/mman.h>
