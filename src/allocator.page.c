@@ -10,24 +10,14 @@
 #include "allocators.h"
 
 extern size_t align(size_t, size_t);
-static void* allocate(void* const, size_t);
 
-static const AllocatorVTable vtable = {
-	.alloc=allocate
-};
-
-Allocator PageAllocator = {
-	.context=NULL,
-	.vtable=&vtable,
-};
-
-static void* allocate(void* const context, size_t size)
+static void* allocate(void* const context, size_t* size)
 {
 	(void)context;
-	size = align(size, sysconf(_SC_PAGESIZE));
+	*size = align(*size, sysconf(_SC_PAGESIZE));
 	void* page = mmap(
 		NULL,
-		size,
+		*size,
 		PROT_READ | PROT_WRITE,
 		MAP_PRIVATE | MAP_ANONYMOUS,
 		-1,
@@ -39,3 +29,12 @@ static void* allocate(void* const context, size_t size)
 	}
 	return page;
 }
+
+static const AllocatorVTable vtable = {
+	.alloc=allocate
+};
+
+const Allocator PageAllocator = {
+	.context=NULL,
+	.vtable=&vtable,
+};

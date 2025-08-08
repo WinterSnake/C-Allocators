@@ -11,27 +11,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-
 // Allocators
-struct Allocator;
 typedef struct AllocatorVTable
 {
-	// - alloc  [void* ctx, size_t size](void*)
-	void* (*alloc)(void* const, size_t);
-	// - resize [allocator ctx](bool)
-	// - remap  [allocator ctx](void*)
-	// - free   [allocator ctx](void)
+	void* (*alloc)(void* const, size_t*);
 } AllocatorVTable;
 
 typedef struct Allocator
 {
-	void* const context;
-	const AllocatorVTable* const vtable;
+	void* context;
+	const AllocatorVTable* vtable;
 } Allocator;
 
-void* Allocator_Alloc(Allocator* const allocator, size_t size);
+void* Allocator_Alloc(const Allocator* const allocator, size_t size);
 
 // Page Allocator
-extern Allocator PageAllocator;
+extern const Allocator PageAllocator;
 
 #endif
