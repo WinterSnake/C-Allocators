@@ -49,18 +49,6 @@ typedef struct Allocator_Bump
 void Allocator_Bump_Init(BumpAllocator* const b, const Allocator* const internal);
 void Allocator_Bump_Deinit(BumpAllocator* const b);
 
-// Linear
-typedef struct Allocator_Linear
-{
-	uint8_t* buffer;
-	size_t index;
-	size_t capacity;
-	Allocator allocator;
-} LinearAllocator;
-void Allocator_Linear_Init(LinearAllocator* const l, const Allocator* const internal, size_t capacity);
-void Allocator_Linear_Init_From_Buffer(LinearAllocator* const l, uint8_t* buffer, size_t capacity);
-void Allocator_Linear_Reset(LinearAllocator* const l);
-
 // Fixed Buffer
 typedef struct Allocator_FixedBuffer
 {
@@ -77,5 +65,17 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba);
 
 // Page Allocator
 extern const Allocator PageAllocator;
+
+// Stack
+typedef struct Allocator_Stack
+{
+	uint8_t* buffer;
+	size_t index;
+	size_t capacity;
+	Allocator allocator;
+} StackAllocator;
+void Allocator_Stack_Init(StackAllocator* const l, const Allocator* const internal, size_t capacity);
+void Allocator_Stack_Init_From_Buffer(StackAllocator* const l, uint8_t* buffer, size_t capacity);
+void Allocator_Stack_Reset(StackAllocator* const l);
 
 #endif

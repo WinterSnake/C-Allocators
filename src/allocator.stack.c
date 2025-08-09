@@ -1,6 +1,6 @@
 /*
 	Allocator Library
-	- Linear
+	- Stack
 
 	Written By: Ryan Smith
 */
@@ -10,13 +10,13 @@
 
 #define HEADER_SIZE sizeof(size_t)
 
-static bool isLastSlice(const LinearAllocator* const l, void* const memory, size_t* const length);
-static bool ownsSlice(const LinearAllocator* const l, void* const memory);
+static bool isLastSlice(const StackAllocator* const l, void* const memory, size_t* const length);
+static bool ownsSlice(const StackAllocator* const l, void* const memory);
 
 // VTable
 static void* allocateSlice(const void* const context, size_t* size)
 {
-	LinearAllocator* l = (LinearAllocator*)context;
+	StackAllocator* l = (StackAllocator*)context;
 	// TODO: Handle error
 	if (l->index + HEADER_SIZE + *size > l->capacity) {
 		return NULL;
@@ -29,7 +29,7 @@ static void* allocateSlice(const void* const context, size_t* size)
 
 static void* resizeSlice(const void* const context, void* memory, size_t size)
 {
-	LinearAllocator* l = (LinearAllocator*)context;
+	StackAllocator* l = (StackAllocator*)context;
 	// TODO: Handle error
 	if (!ownsSlice(l, memory)) {
 		return NULL;
@@ -50,7 +50,7 @@ static void* resizeSlice(const void* const context, void* memory, size_t size)
 
 static void freeSlice(const void* const context, void* memory)
 {
-	LinearAllocator* l = (LinearAllocator*)context;
+	StackAllocator* l = (StackAllocator*)context;
 	if (!ownsSlice(l, memory)) {
 		return;
 	}
@@ -67,15 +67,15 @@ static const AllocatorVTable vtable = {
 };
 
 // Public API
-void Allocator_Linear_Init(LinearAllocator* const l, const Allocator* const internal, size_t capacity)
+void Allocator_Stack_Init(StackAllocator* const l, const Allocator* const internal, size_t capacity)
 {
 	uint8_t* buffer = (uint8_t*)Allocator_Alloc(internal, capacity);
-	Allocator_Linear_Init_From_Buffer(l, buffer, capacity);
+	Allocator_Stack_Init_From_Buffer(l, buffer, capacity);
 }
 
-void Allocator_Linear_Init_From_Buffer(LinearAllocator* const l, uint8_t* buffer, size_t capacity)
+void Allocator_Stack_Init_From_Buffer(StackAllocator* const l, uint8_t* buffer, size_t capacity)
 {
-	*l = (LinearAllocator){
+	*l = (StackAllocator){
 		.buffer=buffer,
 		.index=0,
 		.capacity=capacity,
@@ -86,19 +86,19 @@ void Allocator_Linear_Init_From_Buffer(LinearAllocator* const l, uint8_t* buffer
 	};
 }
 
-void Allocator_Linear_Reset(LinearAllocator* const l)
+void Allocator_Stack_Reset(StackAllocator* const l)
 {
 	l->index = 0;
 }
 
 // Helpers
-static bool isLastSlice(const LinearAllocator* const l, void* const memory, size_t* const length)
+static bool isLastSlice(const StackAllocator* const l, void* const memory, size_t* const length)
 {
 	*length = *(size_t*)(memory - HEADER_SIZE);
 	return (uint8_t*)memory + *length == l->buffer + l->index;
 }
 
-static bool ownsSlice(const LinearAllocator* const l, void* const memory)
+static bool ownsSlice(const StackAllocator* const l, void* const memory)
 {
 	return (uint8_t*)memory >= l->buffer && (uint8_t*)memory < l->buffer + l->capacity;
 }
