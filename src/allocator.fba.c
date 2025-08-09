@@ -7,7 +7,9 @@
 
 #include "allocators.h"
 
-static void* allocate(void* const context, size_t* size)
+extern void NopFree(const void* const, void*);
+
+static void* allocate(const void* const context, size_t* size)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
 	if (fba->index + *size > fba->capacity) return NULL;
@@ -18,8 +20,10 @@ static void* allocate(void* const context, size_t* size)
 
 static const AllocatorVTable vtable = {
 	.alloc=allocate,
+	.free=NopFree,
 };
 
+// Public API
 void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, uint8_t* buffer, size_t capacity)
 {
 	*fba = (FixedBufferAllocator){

@@ -14,16 +14,18 @@
 typedef struct AllocatorVTable
 {
 	// Size will change towards how much memory was actually allocated
-	void* (*alloc)(void* const, size_t*);
+	void* (*alloc)(const void* const, size_t*);
+	void  (*free)(const void* const, void*);
 } AllocatorVTable;
 
 typedef struct Allocator
 {
-	void* context;
+	const void* context;
 	const AllocatorVTable* vtable;
 } Allocator;
 
 void* Allocator_Alloc(const Allocator* const allocator, size_t size);
+void  Allocator_Free(const Allocator* const allocator, void* memory);
 
 // Bump
 struct Allocator_BumpBlock
@@ -34,15 +36,14 @@ struct Allocator_BumpBlock
 
 typedef struct Allocator_Bump
 {
-	struct {
-		size_t index;
-		struct Allocator_BumpBlock block;
-	} current;
+	size_t index;
+	struct Allocator_BumpBlock block;
 	const Allocator* internal;
 	Allocator allocator;
 } BumpAllocator;
 
 void Allocator_Bump_Init(BumpAllocator* const b, const Allocator* const internal);
+void Allocator_Bump_Deinit(BumpAllocator* const b);
 
 // Fixed Buffer
 typedef struct Allocator_FixedBuffer

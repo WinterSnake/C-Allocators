@@ -25,5 +25,6 @@ int main(int argc, char** argv)
 	const ptrdiff_t difference = message2 - message1;
 	printf("From 1 -> 2 %s\n", (char*)(message1 + difference));
 	printf("From 2 -> 1 %s\n", (char*)(message2 - difference));
+	Allocator_Bump_Deinit(&bump);
 	return 0;
 }

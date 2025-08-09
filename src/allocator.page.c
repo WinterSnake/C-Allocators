@@ -7,12 +7,12 @@
 
 #include <sys/mman.h>
 #include <unistd.h>
-
 #include "allocators.h"
 
 extern size_t align(size_t, size_t);
+extern void NopFree(const void* const, void*);
 
-static void* allocate(void* const context, size_t* size)
+static void* allocate(const void* const context, size_t* size)
 {
 	(void)context;
 	*size = align(*size, sysconf(_SC_PAGESIZE));
@@ -32,7 +32,8 @@ static void* allocate(void* const context, size_t* size)
 }
 
 static const AllocatorVTable vtable = {
-	.alloc=allocate
+	.alloc=allocate,
+	.free=NopFree,
 };
 
 const Allocator PageAllocator = {
