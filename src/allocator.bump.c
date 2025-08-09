@@ -15,7 +15,7 @@ extern void* Allocator_RawAlloc(Allocator_Interface allocator, size_t* size);
 // VTable
 static void* allocateBlock(Allocator_Context context, size_t* size)
 {
-	BumpAllocator* b = (BumpAllocator*)context;
+	Allocator_Context_T(Bump) b = (BumpAllocator*)context;
 	void* memory;
 	const size_t allocSize = *size;
 	// index + size > block.length

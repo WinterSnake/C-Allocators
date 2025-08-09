@@ -7,12 +7,12 @@
 
 #include "allocators.h"
 
-static bool isLastSlice(Allocator_Context_T(FixedBuffer) fba, void* const memory);
+static bool isLastSlice(const Allocator_Context_T(FixedBuffer) fba, void* const memory);
 
 // VTable
 static void* allocateSlice(Allocator_Context context, size_t* size)
 {
-	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
+	Allocator_Context_T(FixedBuffer) fba = (FixedBufferAllocator*)context;
 	// TODO: Handle error
 	if (fba->cursor.index + *size > fba->capacity) {
 		return NULL;
@@ -69,7 +69,7 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba)
 }
 
 // Helpers
-static bool isLastSlice(Allocator_Context_T(FixedBuffer) fba, void* const memory)
+static bool isLastSlice(const Allocator_Context_T(FixedBuffer) fba, void* const memory)
 {
 	return (uint8_t*)memory == fba->buffer + fba->cursor.previous;
 }

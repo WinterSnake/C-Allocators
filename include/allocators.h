@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #define Allocator_Context const void* const
-#define Allocator_Context_T(Type) const Type##Allocator* const
+#define Allocator_Context_T(Type) Type##Allocator* const
 #define Allocator_Interface const Allocator* const
 
 typedef struct AllocatorVTable
