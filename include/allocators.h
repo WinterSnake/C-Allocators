@@ -62,7 +62,16 @@ void Allocator_Linear_Init_From_Buffer(LinearAllocator* const l, void* buffer, s
 void Allocator_Linear_Reset(LinearAllocator* const l);
 
 // Fixed Buffer
-typedef LinearAllocator FixedBufferAllocator;
+typedef struct Allocator_FixedBuffer
+{
+	void* buffer;
+	struct {
+		size_t index;
+		size_t previous;
+	} cursor;
+	size_t capacity;
+	Allocator allocator;
+} FixedBufferAllocator;
 void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, void* buffer, size_t capacity);
 void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba);
 
