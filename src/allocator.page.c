@@ -23,7 +23,7 @@ static void* mapPage(const void* const context, size_t* size)
 		-1,
 		0
 	);
-	// TODO: Handle errors
+	// TODO: Handle error
 	if (page == MAP_FAILED) {
 		return NULL;
 	}
@@ -34,7 +34,7 @@ static void unmapPage(const void* const context, void* memory)
 {
 	(void)context;
 	const size_t size = sysconf(_SC_PAGESIZE);
-	// TODO: Handle errors
+	// TODO: Handle error
 	if (munmap(memory, size) == -1) {
 	}
 }

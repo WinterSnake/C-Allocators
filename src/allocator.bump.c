@@ -1,6 +1,6 @@
 /*
 	Allocator Library
-	- Bump Allocator
+	- Bump
 
 	Written By: Ryan Smith
 */
@@ -10,16 +10,20 @@
 
 extern void NopFree(const void* const, void*);
 
-static void* allocate(const void* const context, size_t* size)
+static void* allocateBlock(const void* const context, size_t* size)
 {
 	BumpAllocator* b = (BumpAllocator*)context;
+	void* memory;
 	const size_t allocSize = *size;
 	// index + size > block.length
-	if (b->index + *size > b->block.length)
-	{
+	if (b->index + *size > b->block.length) {
 		// Get block
 		*size += sizeof(struct Allocator_BumpBlock);
 		void* block = b->internal->vtable->alloc(b->internal->context, size);
+		// TODO: Handle error
+		if (block == NULL) {
+			return NULL;
+		}
 		// Write previous block and set current
 		const struct Allocator_BumpBlock previous = b->block;
 		memcpy(block, &previous, sizeof(struct Allocator_BumpBlock));
@@ -27,20 +31,19 @@ static void* allocate(const void* const context, size_t* size)
 			.length=*size,
 			.previous=block,
 		};
-		// Set and return memory
-		void* memory = block + sizeof(struct Allocator_BumpBlock);
-		b->index = sizeof(struct Allocator_BumpBlock) + allocSize;
-		return memory;
-	}
+		// Set memory to offset
+		b->index = sizeof(struct Allocator_BumpBlock);
+		memory = block + sizeof(struct Allocator_BumpBlock);
 	// index + size <= block.length
-	void* const current = b->block.previous;
-	void* memory = current + b->index;
-	b->index += *size;
+	} else {
+		memory = (void*)b->block.previous + b->index;
+	}
+	b->index += allocSize;
 	return memory;
 }
 
 static const AllocatorVTable vtable = {
-	.alloc=allocate,
+	.alloc=allocateBlock,
 	.free=NopFree,
 };
 
@@ -66,6 +69,7 @@ void Allocator_Bump_Deinit(BumpAllocator* const b)
 	{
 		void* block = current.previous;
 		memcpy(&current, block, sizeof(struct Allocator_BumpBlock));
+		// TODO: Error checking
 		b->internal->vtable->free(b->internal->context, block);
 	}
 	b->block = (struct Allocator_BumpBlock){ 0 };

@@ -9,17 +9,20 @@
 
 extern void NopFree(const void* const, void*);
 
-static void* allocate(const void* const context, size_t* size)
+static void* allocateSlice(const void* const context, size_t* size)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
-	if (fba->index + *size > fba->capacity) return NULL;
-	void* ptr = fba->buffer + fba->index;
+	// TODO: Handle error
+	if (fba->index + *size > fba->capacity) {
+		return NULL;
+	}
+	void* memory = fba->buffer + fba->index;
 	fba->index += *size;
-	return ptr;
+	return memory;
 }
 
 static const AllocatorVTable vtable = {
-	.alloc=allocate,
+	.alloc=allocateSlice,
 	.free=NopFree,
 };
 

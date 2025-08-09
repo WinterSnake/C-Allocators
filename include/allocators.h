@@ -24,9 +24,11 @@ typedef struct Allocator
 	const AllocatorVTable* vtable;
 } Allocator;
 
+/// API
 void* Allocator_Alloc(const Allocator* const allocator, size_t size);
 void  Allocator_Free(const Allocator* const allocator, void* memory);
 
+/// Allocators
 // Bump
 struct Allocator_BumpBlock
 {
