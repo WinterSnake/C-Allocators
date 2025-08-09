@@ -7,10 +7,10 @@
 
 #include "allocators.h"
 
-static bool isLastSlice(const FixedBufferAllocator* const fba, void* const memory);
+static bool isLastSlice(Allocator_Context_T(FixedBuffer) fba, void* const memory);
 
 // VTable
-static void* allocateSlice(const void* const context, size_t* size)
+static void* allocateSlice(Allocator_Context context, size_t* size)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
 	// TODO: Handle error
@@ -23,7 +23,7 @@ static void* allocateSlice(const void* const context, size_t* size)
 	return memory;
 }
 
-static void* resizeLastSlice(const void* const context, void* memory, size_t size)
+static void* resizeLastSlice(Allocator_Context context, void* memory, size_t size)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
 	if (isLastSlice(fba, memory)){
@@ -34,7 +34,7 @@ static void* resizeLastSlice(const void* const context, void* memory, size_t siz
 	return NULL;
 }
 
-static void freeLastSlice(const void* const context, void* memory)
+static void freeLastSlice(Allocator_Context context, void* memory)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
 	if (isLastSlice(fba, memory)){
@@ -69,7 +69,7 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba)
 }
 
 // Helpers
-static bool isLastSlice(const FixedBufferAllocator* const fba, void* const memory)
+static bool isLastSlice(Allocator_Context_T(FixedBuffer) fba, void* const memory)
 {
 	return (uint8_t*)memory == fba->buffer + fba->cursor.previous;
 }

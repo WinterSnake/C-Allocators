@@ -10,10 +10,10 @@
 
 #define HEADER_SIZE sizeof(struct AllocatorBlock_Bump)
 
-extern void* Allocator_RawAlloc(const Allocator* const allocator, size_t* size);
+extern void* Allocator_RawAlloc(Allocator_Interface allocator, size_t* size);
 
 // VTable
-static void* allocateBlock(const void* const context, size_t* size)
+static void* allocateBlock(Allocator_Context context, size_t* size)
 {
 	BumpAllocator* b = (BumpAllocator*)context;
 	void* memory;
@@ -45,8 +45,8 @@ static void* allocateBlock(const void* const context, size_t* size)
 	return memory;
 }
 
-extern void* NopResize(const void* const, void*, size_t);
-extern void NopFree(const void* const, void*);
+extern void* NopResize(Allocator_Context, void*, size_t);
+extern void NopFree(Allocator_Context, void*);
 
 static const AllocatorVTable vtable = {
 	.alloc=allocateBlock,
@@ -55,7 +55,7 @@ static const AllocatorVTable vtable = {
 };
 
 // Public API
-void Allocator_Bump_Init(BumpAllocator* const b, const Allocator* const internal)
+void Allocator_Bump_Init(BumpAllocator* const b, Allocator_Interface internal)
 {
 	*b = (BumpAllocator){
 		.index=0,

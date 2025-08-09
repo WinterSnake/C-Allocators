@@ -10,11 +10,11 @@
 
 #define HEADER_SIZE sizeof(size_t)
 
-static bool isLastSlice(const StackAllocator* const l, void* const memory, size_t* const length);
-static bool ownsSlice(const StackAllocator* const l, void* const memory);
+static bool isLastSlice(Allocator_Context_T(Stack) l, void* const memory, size_t* const length);
+static bool ownsSlice(Allocator_Context_T(Stack) l, void* const memory);
 
 // VTable
-static void* allocateSlice(const void* const context, size_t* size)
+static void* allocateSlice(Allocator_Context context, size_t* size)
 {
 	StackAllocator* l = (StackAllocator*)context;
 	// TODO: Handle error
@@ -27,7 +27,7 @@ static void* allocateSlice(const void* const context, size_t* size)
 	return memory + HEADER_SIZE;
 }
 
-static void* resizeSlice(const void* const context, void* memory, size_t size)
+static void* resizeSlice(Allocator_Context context, void* memory, size_t size)
 {
 	StackAllocator* l = (StackAllocator*)context;
 	// TODO: Handle error
@@ -48,7 +48,7 @@ static void* resizeSlice(const void* const context, void* memory, size_t size)
 	return memory;
 }
 
-static void freeSlice(const void* const context, void* memory)
+static void freeSlice(Allocator_Context context, void* memory)
 {
 	StackAllocator* l = (StackAllocator*)context;
 	if (!ownsSlice(l, memory)) {
@@ -67,7 +67,7 @@ static const AllocatorVTable vtable = {
 };
 
 // Public API
-void Allocator_Stack_Init(StackAllocator* const l, const Allocator* const internal, size_t capacity)
+void Allocator_Stack_Init(StackAllocator* const l, Allocator_Interface internal, size_t capacity)
 {
 	uint8_t* buffer = (uint8_t*)Allocator_Alloc(internal, capacity);
 	Allocator_Stack_Init_From_Buffer(l, buffer, capacity);
@@ -92,13 +92,13 @@ void Allocator_Stack_Reset(StackAllocator* const l)
 }
 
 // Helpers
-static bool isLastSlice(const StackAllocator* const l, void* const memory, size_t* const length)
+static bool isLastSlice(Allocator_Context_T(Stack) l, void* const memory, size_t* const length)
 {
 	*length = *(size_t*)(memory - HEADER_SIZE);
 	return (uint8_t*)memory + *length == l->buffer + l->index;
 }
 
-static bool ownsSlice(const StackAllocator* const l, void* const memory)
+static bool ownsSlice(Allocator_Context_T(Stack) l, void* const memory)
 {
 	return (uint8_t*)memory >= l->buffer && (uint8_t*)memory < l->buffer + l->capacity;
 }

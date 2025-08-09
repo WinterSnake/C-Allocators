@@ -12,7 +12,7 @@
 extern size_t align(size_t, size_t);
 
 // VTable
-static void* mapPage(const void* const context, size_t* size)
+static void* mapPage(Allocator_Context context, size_t* size)
 {
 	(void)context;
 	*size = align(*size, sysconf(_SC_PAGESIZE));
@@ -31,9 +31,9 @@ static void* mapPage(const void* const context, size_t* size)
 	return page;
 }
 
-extern void* NopResize(const void* const, void*, size_t);
+extern void* NopResize(Allocator_Context, void*, size_t);
 
-static void unmapPage(const void* const context, void* memory)
+static void unmapPage(Allocator_Context context, void* memory)
 {
 	(void)context;
 	const size_t size = sysconf(_SC_PAGESIZE);

@@ -11,12 +11,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define Allocator_Context const void* const
+#define Allocator_Context_T(Type) const Type##Allocator* const
+#define Allocator_Interface const Allocator* const
+
 typedef struct AllocatorVTable
 {
 	// Size will change towards how much memory was actually allocated
-	void* (*alloc)(const void* const, size_t*);
-	void* (*resize)(const void* const, void*, size_t);
-	void  (*free)(const void* const, void*);
+	void* (*alloc)(Allocator_Context, size_t*);
+	void* (*resize)(Allocator_Context, void*, size_t);
+	void  (*free)(Allocator_Context, void*);
 } AllocatorVTable;
 
 typedef struct Allocator
@@ -26,9 +30,9 @@ typedef struct Allocator
 } Allocator;
 
 /// API
-void* Allocator_Alloc(const Allocator* const allocator, size_t size);
-void* Allocator_Resize(const Allocator* const allocator, void* memory, size_t size);
-void  Allocator_Free(const Allocator* const allocator, void* memory);
+void* Allocator_Alloc(Allocator_Interface allocator, size_t size);
+void* Allocator_Resize(Allocator_Interface allocator, void* memory, size_t size);
+void  Allocator_Free(Allocator_Interface allocator, void* memory);
 
 /// Allocators
 // Bump
@@ -46,7 +50,7 @@ typedef struct Allocator_Bump
 	Allocator allocator;
 } BumpAllocator;
 
-void Allocator_Bump_Init(BumpAllocator* const b, const Allocator* const internal);
+void Allocator_Bump_Init(BumpAllocator* const b, Allocator_Interface internal);
 void Allocator_Bump_Deinit(BumpAllocator* const b);
 
 // Fixed Buffer
@@ -74,7 +78,7 @@ typedef struct Allocator_Stack
 	size_t capacity;
 	Allocator allocator;
 } StackAllocator;
-void Allocator_Stack_Init(StackAllocator* const l, const Allocator* const internal, size_t capacity);
+void Allocator_Stack_Init(StackAllocator* const l, Allocator_Interface internal, size_t capacity);
 void Allocator_Stack_Init_From_Buffer(StackAllocator* const l, uint8_t* buffer, size_t capacity);
 void Allocator_Stack_Reset(StackAllocator* const l);
 
