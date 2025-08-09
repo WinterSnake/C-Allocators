@@ -8,7 +8,7 @@
 #include <string.h>
 #include "allocators.h"
 
-#define HEADER_SIZE sizeof(struct Allocator_BumpBlock)
+#define HEADER_SIZE sizeof(struct AllocatorBlock_Bump)
 
 extern void* Allocator_RawAlloc(const Allocator* const allocator, size_t* size);
 
@@ -28,9 +28,9 @@ static void* allocateBlock(const void* const context, size_t* size)
 			return NULL;
 		}
 		// Write previous block and set current
-		const struct Allocator_BumpBlock previous = b->block;
+		const struct AllocatorBlock_Bump previous = b->block;
 		memcpy(block, &previous, HEADER_SIZE);
-		b->block = (struct Allocator_BumpBlock){
+		b->block = (struct AllocatorBlock_Bump){
 			.length=*size,
 			.previous=block,
 		};
@@ -71,7 +71,7 @@ void Allocator_Bump_Init(BumpAllocator* const b, const Allocator* const internal
 void Allocator_Bump_Deinit(BumpAllocator* const b)
 {
 	b->index = 0;
-	struct Allocator_BumpBlock current = b->block;
+	struct AllocatorBlock_Bump current = b->block;
 	while (current.previous != NULL)
 	{
 		void* block = current.previous;
@@ -79,5 +79,5 @@ void Allocator_Bump_Deinit(BumpAllocator* const b)
 		// TODO: Error checking
 		b->internal->vtable->free(b->internal->context, block);
 	}
-	b->block = (struct Allocator_BumpBlock){ 0 };
+	b->block = (struct AllocatorBlock_Bump){ 0 };
 }

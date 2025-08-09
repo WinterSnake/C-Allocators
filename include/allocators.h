@@ -32,16 +32,16 @@ void  Allocator_Free(const Allocator* const allocator, void* memory);
 
 /// Allocators
 // Bump
-struct Allocator_BumpBlock
+struct AllocatorBlock_Bump
 {
 	size_t length;
-	struct Allocator_BumpBlock* previous;
+	struct AllocatorBlock_Bump* previous;
 };
 
 typedef struct Allocator_Bump
 {
 	size_t index;
-	struct Allocator_BumpBlock block;
+	struct AllocatorBlock_Bump block;
 	const Allocator* internal;
 	Allocator allocator;
 } BumpAllocator;
