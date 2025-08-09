@@ -5,13 +5,13 @@
 	Written By: Ryan Smith
 */
 
-#include <stdio.h>
 #include <string.h>
 #include "allocators.h"
 
 #define HEADER_SIZE sizeof(size_t)
 
-static bool isLastSlice(const LinearAllocator* const l, void* memory, size_t* size);
+static bool isLastSlice(const LinearAllocator* const l, void* const memory, size_t* const length);
+static bool ownsSlice(const LinearAllocator* const l, void* const memory);
 
 // VTable
 static void* allocateSlice(const void* const context, size_t* size)
@@ -30,25 +30,33 @@ static void* allocateSlice(const void* const context, size_t* size)
 static void* resizeSlice(const void* const context, void* memory, size_t size)
 {
 	LinearAllocator* l = (LinearAllocator*)context;
-	size_t length;
-	if (isLastSlice(l, memory, &length)) {
-		// TODO: Handle error
-		if (l->index - length + size > l->capacity) {
-			return NULL;
-		}
-		memcpy(memory - HEADER_SIZE, &size, HEADER_SIZE);
-		l->index = l->index - length + size;
-		return memory;
+	// TODO: Handle error
+	if (!ownsSlice(l, memory)) {
+		return NULL;
 	}
-	return NULL;
+	size_t length;
+	// TODO: Handle error
+	if (!isLastSlice(l, memory, &length)) {
+		return NULL;
+	}
+	// TODO: Handle error
+	if (l->index - length + size > l->capacity) {
+		return NULL;
+	}
+	memcpy(memory - HEADER_SIZE, &size, HEADER_SIZE);
+	l->index = l->index - length + size;
+	return memory;
 }
 
 static void freeSlice(const void* const context, void* memory)
 {
 	LinearAllocator* l = (LinearAllocator*)context;
-	size_t size;
-	if (isLastSlice(l, memory, &size)) {
-		l->index -= HEADER_SIZE + size;
+	if (!ownsSlice(l, memory)) {
+		return;
+	}
+	size_t length;
+	if (isLastSlice(l, memory, &length)) {
+		l->index -= HEADER_SIZE + length;
 	}
 }
 
@@ -84,8 +92,13 @@ void Allocator_Linear_Reset(LinearAllocator* const l)
 }
 
 // Helpers
-static bool isLastSlice(const LinearAllocator* const l, void* memory, size_t* size)
+static bool isLastSlice(const LinearAllocator* const l, void* const memory, size_t* const length)
 {
-	*size = *(size_t*)(memory - HEADER_SIZE);
-	return memory + *size == l->buffer + l->index;
+	*length = *(size_t*)(memory - HEADER_SIZE);
+	return memory + *length == l->buffer + l->index;
+}
+
+static bool ownsSlice(const LinearAllocator* const l, void* const memory)
+{
+	return memory >= l->buffer && memory < l->buffer + l->capacity;
 }

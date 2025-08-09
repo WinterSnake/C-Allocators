@@ -13,6 +13,7 @@ int main(int argc, char** argv)
 {
 	(void)argc;
 	(void)argv;
+	char* msg = "My own buffer";
 	uint8_t buffer[1024];
 	LinearAllocator linear;
 	Allocator_Linear_Init_From_Buffer(&linear, buffer, 1024);
@@ -38,5 +39,6 @@ int main(int argc, char** argv)
 	memcpy(message2, "This string will overwrite message 1\0", 37);
 	printf("Idx: %li, msg2: %s\n", linear.index, message2);
 	printf("msg1: %s\n", message1);
+	Allocator_Free(&linearAlloc, msg);
 	return 0;
 }
