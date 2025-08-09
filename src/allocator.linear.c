@@ -69,11 +69,11 @@ static const AllocatorVTable vtable = {
 // Public API
 void Allocator_Linear_Init(LinearAllocator* const l, const Allocator* const internal, size_t capacity)
 {
-	void* buffer = Allocator_Alloc(internal, capacity);
+	uint8_t* buffer = (uint8_t*)Allocator_Alloc(internal, capacity);
 	Allocator_Linear_Init_From_Buffer(l, buffer, capacity);
 }
 
-void Allocator_Linear_Init_From_Buffer(LinearAllocator* const l, void* buffer, size_t capacity)
+void Allocator_Linear_Init_From_Buffer(LinearAllocator* const l, uint8_t* buffer, size_t capacity)
 {
 	*l = (LinearAllocator){
 		.buffer=buffer,
@@ -95,10 +95,10 @@ void Allocator_Linear_Reset(LinearAllocator* const l)
 static bool isLastSlice(const LinearAllocator* const l, void* const memory, size_t* const length)
 {
 	*length = *(size_t*)(memory - HEADER_SIZE);
-	return memory + *length == l->buffer + l->index;
+	return (uint8_t*)memory + *length == l->buffer + l->index;
 }
 
 static bool ownsSlice(const LinearAllocator* const l, void* const memory)
 {
-	return memory >= l->buffer && memory < l->buffer + l->capacity;
+	return (uint8_t*)memory >= l->buffer && (uint8_t*)memory < l->buffer + l->capacity;
 }

@@ -49,7 +49,7 @@ static const AllocatorVTable vtable = {
 };
 
 // Public API
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, void* buffer, size_t capacity)
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, uint8_t* buffer, size_t capacity)
 {
 	*fba = (FixedBufferAllocator){
 		.buffer=buffer,
@@ -71,5 +71,5 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba)
 // Helpers
 static bool isLastSlice(const FixedBufferAllocator* const fba, void* const memory)
 {
-	return memory == fba->buffer + fba->cursor.previous;
+	return (uint8_t*)memory == fba->buffer + fba->cursor.previous;
 }

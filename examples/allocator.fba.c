@@ -23,10 +23,10 @@ int main(int argc, char** argv)
 	char* msg2 = Allocator_Alloc(&fbaAlloc, 26);
 	memcpy(msg2, "The other message is here\0", 26);
 	printf("Idx: %li; %s\n", fba.cursor.index, msg2);
-	msg2 = Allocator_Resize(&fbaAlloc, msg2, 13);
+	msg2 = Allocator_Resize(&fbaAlloc, msg2, 18);
 	printf("Idx: %li; %s\n", fba.cursor.index, msg2);
 	char* msg3 = Allocator_Alloc(&fbaAlloc, 30);
-	memcpy(msg3, "This will overwrite message 2\0", 30);
+	memcpy(msg3, "will overwrite message 2\0", 25);
 	printf("Idx: %li; %s\n", fba.cursor.index, msg3);
 	printf("Message 2; %s\n", msg2);
 	Allocator_Free(&fbaAlloc, msg3);
