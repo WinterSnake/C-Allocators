@@ -10,9 +10,8 @@
 #include "allocators.h"
 
 extern size_t align(size_t, size_t);
-extern void NopFree(const void* const, void*);
 
-static void* allocate(const void* const context, size_t* size)
+static void* mapPage(const void* const context, size_t* size)
 {
 	(void)context;
 	*size = align(*size, sysconf(_SC_PAGESIZE));
@@ -31,9 +30,18 @@ static void* allocate(const void* const context, size_t* size)
 	return page;
 }
 
+static void unmapPage(const void* const context, void* memory)
+{
+	(void)context;
+	const size_t size = sysconf(_SC_PAGESIZE);
+	// TODO: Handle errors
+	if (munmap(memory, size) == -1) {
+	}
+}
+
 static const AllocatorVTable vtable = {
-	.alloc=allocate,
-	.free=NopFree,
+	.alloc=mapPage,
+	.free=unmapPage,
 };
 
 const Allocator PageAllocator = {
