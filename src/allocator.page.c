@@ -11,6 +11,7 @@
 
 extern size_t align(size_t, size_t);
 
+// VTable
 static void* mapPage(const void* const context, size_t* size)
 {
 	(void)context;
@@ -30,6 +31,8 @@ static void* mapPage(const void* const context, size_t* size)
 	return page;
 }
 
+extern void* NopResize(const void* const, void*, size_t);
+
 static void unmapPage(const void* const context, void* memory)
 {
 	(void)context;
@@ -41,9 +44,11 @@ static void unmapPage(const void* const context, void* memory)
 
 static const AllocatorVTable vtable = {
 	.alloc=mapPage,
+	.resize=NopResize,
 	.free=unmapPage,
 };
 
+// Public API
 const Allocator PageAllocator = {
 	.context=NULL,
 	.vtable=&vtable,

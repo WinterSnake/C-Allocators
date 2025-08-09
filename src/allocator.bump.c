@@ -8,8 +8,7 @@
 #include <string.h>
 #include "allocators.h"
 
-extern void NopFree(const void* const, void*);
-
+// VTable
 static void* allocateBlock(const void* const context, size_t* size)
 {
 	BumpAllocator* b = (BumpAllocator*)context;
@@ -42,8 +41,12 @@ static void* allocateBlock(const void* const context, size_t* size)
 	return memory;
 }
 
+extern void* NopResize(const void* const, void*, size_t);
+extern void NopFree(const void* const, void*);
+
 static const AllocatorVTable vtable = {
 	.alloc=allocateBlock,
+	.resize=NopResize,
 	.free=NopFree,
 };
 

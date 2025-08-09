@@ -7,8 +7,7 @@
 
 #include "allocators.h"
 
-extern void NopFree(const void* const, void*);
-
+// VTable
 static void* allocateSlice(const void* const context, size_t* size)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
@@ -21,13 +20,17 @@ static void* allocateSlice(const void* const context, size_t* size)
 	return memory;
 }
 
+extern void* NopResize(const void* const, void*, size_t);
+extern void NopFree(const void* const, void*);
+
 static const AllocatorVTable vtable = {
 	.alloc=allocateSlice,
+	.resize=NopResize,
 	.free=NopFree,
 };
 
 // Public API
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, uint8_t* buffer, size_t capacity)
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, void* buffer, size_t capacity)
 {
 	*fba = (FixedBufferAllocator){
 		.buffer=buffer,
