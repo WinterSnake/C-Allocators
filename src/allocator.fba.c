@@ -7,6 +7,8 @@
 
 #include "allocators.h"
 
+static bool isLastSlice(const FixedBufferAllocator* const fba, void* const memory);
+
 // VTable
 static void* allocateSlice(const void* const context, size_t* size)
 {
@@ -21,25 +23,29 @@ static void* allocateSlice(const void* const context, size_t* size)
 	return memory;
 }
 
-static void* resizeSlice(const void* const context, void* memory, size_t size)
+static void* resizeLastSlice(const void* const context, void* memory, size_t size)
 {
 	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
-	// TODO: Handle error
-	if (memory != fba->buffer + fba->cursor.previous) {
-		return NULL;
-	} else if (fba->cursor.previous + size > fba->capacity) {
-		return NULL;
+	if (isLastSlice(fba, memory)){
+		fba->cursor.index = fba->cursor.previous + size;
+		return memory;
 	}
-	fba->cursor.index = fba->cursor.previous + size;
-	return memory;
+	// TODO: Handle error
+	return NULL;
 }
 
-extern void NopFree(const void* const, void*);
+static void freeLastSlice(const void* const context, void* memory)
+{
+	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
+	if (isLastSlice(fba, memory)){
+		fba->cursor.index = fba->cursor.previous;
+	}
+}
 
 static const AllocatorVTable vtable = {
 	.alloc=allocateSlice,
-	.resize=resizeSlice,
-	.free=NopFree,
+	.resize=resizeLastSlice,
+	.free=freeLastSlice,
 };
 
 // Public API
@@ -60,4 +66,10 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba)
 {
 	fba->cursor.index = 0;
 	fba->cursor.previous = 0;
+}
+
+// Helpers
+static bool isLastSlice(const FixedBufferAllocator* const fba, void* const memory)
+{
+	return memory == fba->buffer + fba->cursor.previous;
 }

@@ -29,5 +29,7 @@ int main(int argc, char** argv)
 	memcpy(msg3, "This will overwrite message 2\0", 30);
 	printf("Idx: %li; %s\n", fba.cursor.index, msg3);
 	printf("Message 2; %s\n", msg2);
+	Allocator_Free(&fbaAlloc, msg3);
+	printf("Idx: %li\n", fba.cursor.index);
 	return 0;
 }
