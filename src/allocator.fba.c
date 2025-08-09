@@ -13,7 +13,7 @@ static bool isLastSlice(const Allocator_Context_T(FixedBuffer) fba, void* const 
 static void* allocateSlice(Allocator_Context context, size_t* size)
 {
 	Allocator_Context_T(FixedBuffer) fba = (FixedBufferAllocator*)context;
-	// TODO: Handle error
+	// TODO: Handle errors
 	if (fba->cursor.index + *size > fba->capacity) {
 		return NULL;
 	}
@@ -30,7 +30,7 @@ static void* resizeLastSlice(Allocator_Context context, void* memory, size_t siz
 		fba->cursor.index = fba->cursor.previous + size;
 		return memory;
 	}
-	// TODO: Handle error
+	// TODO: Handle errors
 	return NULL;
 }
 

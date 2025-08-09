@@ -8,7 +8,7 @@
 #include <string.h>
 #include "allocators.h"
 
-#define HEADER_SIZE sizeof(struct AllocatorBlock_Bump)
+#define HEADER_SIZE sizeof(void*)
 
 extern void* Allocator_RawAlloc(Allocator_Interface allocator, size_t* size);
 
@@ -19,27 +19,25 @@ static void* allocateBlock(Allocator_Context context, size_t* size)
 	void* memory;
 	const size_t allocSize = *size;
 	// index + size > block.length
-	if (b->index + *size > b->block.length) {
+	if (b->index + *size > b->current.length) {
 		// Get block
 		*size += HEADER_SIZE;
 		void* block = Allocator_RawAlloc(b->internal, size);
-		// TODO: Handle error
+		// TODO: Handle errors
 		if (block == NULL) {
 			return NULL;
 		}
 		// Write previous block and set current
-		const struct AllocatorBlock_Bump previous = b->block;
+		const void* const previous = b->current.block;
 		memcpy(block, &previous, HEADER_SIZE);
-		b->block = (struct AllocatorBlock_Bump){
-			.length=*size,
-			.previous=block,
-		};
+		b->current.length = *size;
+		b->current.block = block;
 		// Set memory to offset
 		b->index = HEADER_SIZE;
 		memory = block + HEADER_SIZE;
 	// index + size <= block.length
 	} else {
-		memory = (void*)b->block.previous + b->index;
+		memory = (void*)b->current.block + b->index;
 	}
 	b->index += allocSize;
 	return memory;
@@ -59,7 +57,7 @@ void Allocator_Bump_Init(BumpAllocator* const b, Allocator_Interface internal)
 {
 	*b = (BumpAllocator){
 		.index=0,
-		.block={ 0 },
+		.current={ 0 },
 		.internal=internal,
 		.allocator={
 			.context=b,
@@ -70,14 +68,11 @@ void Allocator_Bump_Init(BumpAllocator* const b, Allocator_Interface internal)
 
 void Allocator_Bump_Deinit(BumpAllocator* const b)
 {
-	b->index = 0;
-	struct AllocatorBlock_Bump current = b->block;
-	while (current.previous != NULL)
-	{
-		void* block = current.previous;
-		memcpy(&current, block, HEADER_SIZE);
-		// TODO: Error checking
-		b->internal->vtable->free(b->internal->context, block);
+	void* current = b->current.block;
+	while (current != NULL) {
+		void* previous = (void*)(*(uintptr_t*)current);
+		// TODO: Handle errors
+		Allocator_Free(b->internal, current);
+		current = previous;
 	}
-	b->block = (struct AllocatorBlock_Bump){ 0 };
 }

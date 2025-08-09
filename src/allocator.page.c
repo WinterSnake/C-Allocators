@@ -5,9 +5,12 @@
 	Written By: Ryan Smith
 */
 
+#include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include "allocators.h"
+
+#define HEADER_SIZE sizeof(size_t)
 
 extern size_t align(size_t, size_t);
 
@@ -24,11 +27,12 @@ static void* mapPage(Allocator_Context context, size_t* size)
 		-1,
 		0
 	);
-	// TODO: Handle error
+	// TODO: Handle errors
 	if (page == MAP_FAILED) {
 		return NULL;
 	}
-	return page;
+	memcpy(page, size, HEADER_SIZE);
+	return page + HEADER_SIZE;
 }
 
 extern void* NopResize(Allocator_Context, void*, size_t);
@@ -36,9 +40,9 @@ extern void* NopResize(Allocator_Context, void*, size_t);
 static void unmapPage(Allocator_Context context, void* memory)
 {
 	(void)context;
-	const size_t size = sysconf(_SC_PAGESIZE);
-	// TODO: Handle error
-	if (munmap(memory, size) == -1) {
+	const size_t size = *(size_t*)(memory - HEADER_SIZE);
+	// TODO: Handle errors
+	if (munmap(memory - HEADER_SIZE, size) == -1) {
 	}
 }
 

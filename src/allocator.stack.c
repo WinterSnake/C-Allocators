@@ -17,7 +17,7 @@ static bool ownsSlice(const Allocator_Context_T(Stack) s, void* const memory);
 static void* allocateSlice(Allocator_Context context, size_t* size)
 {
 	Allocator_Context_T(Stack) s = (StackAllocator*)context;
-	// TODO: Handle error
+	// TODO: Handle errors
 	if (s->index + HEADER_SIZE + *size > s->capacity) {
 		return NULL;
 	}
@@ -30,17 +30,11 @@ static void* allocateSlice(Allocator_Context context, size_t* size)
 static void* resizeSlice(Allocator_Context context, void* memory, size_t size)
 {
 	Allocator_Context_T(Stack) s = (StackAllocator*)context;
-	// TODO: Handle error
-	if (!ownsSlice(s, memory)) {
-		return NULL;
-	}
+	// TODO: Provide errors
 	size_t length;
-	// TODO: Handle error
 	if (!isLastSlice(s, memory, &length)) {
 		return NULL;
-	}
-	// TODO: Handle error
-	if (s->index - length + size > s->capacity) {
+	} else if (s->index - length + size > s->capacity) {
 		return NULL;
 	}
 	memcpy(memory - HEADER_SIZE, &size, HEADER_SIZE);
@@ -51,9 +45,6 @@ static void* resizeSlice(Allocator_Context context, void* memory, size_t size)
 static void freeSlice(Allocator_Context context, void* memory)
 {
 	Allocator_Context_T(Stack) s = (StackAllocator*)context;
-	if (!ownsSlice(s, memory)) {
-		return;
-	}
 	size_t length;
 	if (isLastSlice(s, memory, &length)) {
 		s->index -= HEADER_SIZE + length;
@@ -94,6 +85,9 @@ void Allocator_Stack_Reset(StackAllocator* const s)
 // Helpers
 static bool isLastSlice(const Allocator_Context_T(Stack) s, void* const memory, size_t* const length)
 {
+	if (!ownsSlice(s, memory)) {
+		return false;
+	}
 	*length = *(size_t*)(memory - HEADER_SIZE);
 	return (uint8_t*)memory + *length == s->buffer + s->index;
 }
