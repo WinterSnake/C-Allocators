@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 	char* msg = "My own buffer";
 	uint8_t buffer[1024];
 	StackAllocator stack;
-	Allocator_Stack_Init_From_Buffer(&stack, buffer, 1024);
+	Allocator_Stack_Init(&stack, buffer, 1024);
 	const Allocator stackAlloc = stack.allocator;
 	char* message1 = Allocator_Alloc(&stackAlloc, 14);
 	memcpy(message1, "Hello, world!\0", 14);

@@ -58,13 +58,7 @@ static const AllocatorVTable vtable = {
 };
 
 // Public API
-void Allocator_Stack_Init(StackAllocator* const s, Allocator_Interface internal, size_t capacity)
-{
-	uint8_t* buffer = (uint8_t*)Allocator_Alloc(internal, capacity);
-	Allocator_Stack_Init_From_Buffer(s, buffer, capacity);
-}
-
-void Allocator_Stack_Init_From_Buffer(StackAllocator* const s, uint8_t* buffer, size_t capacity)
+void Allocator_Stack_Init(StackAllocator* const s, uint8_t* buffer, size_t capacity)
 {
 	*s = (StackAllocator){
 		.buffer=buffer,

@@ -75,8 +75,7 @@ typedef struct Allocator_Stack
 	size_t capacity;
 	Allocator allocator;
 } StackAllocator;
-void Allocator_Stack_Init(StackAllocator* const l, Allocator_Interface internal, size_t capacity);
-void Allocator_Stack_Init_From_Buffer(StackAllocator* const l, uint8_t* buffer, size_t capacity);
-void Allocator_Stack_Reset(StackAllocator* const l);
+void Allocator_Stack_Init(StackAllocator* const s, uint8_t* buffer, size_t capacity);
+void Allocator_Stack_Reset(StackAllocator* const s);
 
 #endif
