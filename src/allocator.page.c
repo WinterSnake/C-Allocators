@@ -13,12 +13,13 @@
 #define HEADER_SIZE sizeof(size_t)
 
 extern size_t align(size_t, size_t);
+static long getPageSize(void);
 
 // VTable
 static void* mapPage(Allocator_Context context, size_t* size)
 {
 	(void)context;
-	*size = align(*size, sysconf(_SC_PAGESIZE));
+	*size = align(*size, getPageSize());
 	void* page = mmap(
 		NULL,
 		*size,
@@ -57,3 +58,12 @@ const Allocator PageAllocator = {
 	.context=NULL,
 	.vtable=&vtable,
 };
+
+// Helpers
+static long getPageSize(void)
+{
+	static long pageSize = 0;
+	if (pageSize > 0) return pageSize;
+	pageSize = sysconf(_SC_PAGESIZE);
+	return pageSize;
+}

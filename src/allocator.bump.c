@@ -70,7 +70,7 @@ void Allocator_Bump_Deinit(BumpAllocator* const b)
 {
 	void* current = b->current.block;
 	while (current != NULL) {
-		void* previous = (void*)(*(uintptr_t*)current);
+		void* previous = *((void**)current);
 		// TODO: Handle errors
 		Allocator_Free(b->internal, current);
 		current = previous;
