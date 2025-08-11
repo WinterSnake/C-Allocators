@@ -7,69 +7,82 @@
 
 #include "allocators.h"
 
-static bool isEndSlice(const Allocator_Context_T(FixedBuffer) fba, const void* const memory);
+Make_Allocator_Context_T(FixedBufferAllocator) FixedBufferContext;
+
+static bool isEndSlice(const FixedBufferContext context, const void* const memory);
 
 // VTable
-static void* allocateSlice(Allocator_Context context, size_t* size)
+static void* allocateSlice(Allocator_Context context, size_t size)
 {
-	Allocator_Context_T(FixedBuffer) fba = (FixedBufferAllocator*)context;
-	// TODO: Handle errors
-	if (fba->cursor.index + *size > fba->capacity) {
+	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
+	if (fixedbuffer->index.current + size > fixedbuffer->capacity) {
 		return NULL;
 	}
-	void* memory = fba->buffer + fba->cursor.index;
-	fba->cursor.previous = fba->cursor.index;
-	fba->cursor.index += *size;
+	fixedbuffer->index.previous = fixedbuffer->index.current;
+	void* memory = fixedbuffer->buffer + fixedbuffer->index.current;
+	fixedbuffer->index.current += size;
 	return memory;
 }
 
-static void* resizeEndSlice(Allocator_Context context, void* memory, size_t size)
+static size_t lengthOfEndSlice(Allocator_Context context, const void* const memory)
 {
-	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
-	if (isEndSlice(fba, memory)){
-		fba->cursor.index = fba->cursor.previous + size;
-		return memory;
+	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
+	if (isEndSlice(fixedbuffer, memory)) {
+		return fixedbuffer->index.current - fixedbuffer->index.previous;
 	}
-	// TODO: Handle errors
-	return NULL;
+	return 0;
 }
 
-static void freeEndSlice(Allocator_Context context, void* memory)
+static bool resizeEndSlice(Allocator_Context context, const void* const memory, size_t newSize)
 {
-	FixedBufferAllocator* fba = (FixedBufferAllocator*)context;
-	if (isEndSlice(fba, memory)){
-		fba->cursor.index = fba->cursor.previous;
+	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
+	if (isEndSlice(fixedbuffer, memory)) {
+		fixedbuffer->index.current = fixedbuffer->index.previous + newSize;
+		return true;
+	}
+	return false;
+}
+
+extern void* NopRemap(Allocator_Context, const void*, size_t);
+
+static void freeEndSlice(Allocator_Context context, void* const memory)
+{
+	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
+	if (isEndSlice(fixedbuffer, memory)) {
+		fixedbuffer->index.current = fixedbuffer->index.previous;
 	}
 }
 
 static const AllocatorVTable vtable = {
 	.alloc=allocateSlice,
+	.lengthOf=lengthOfEndSlice,
 	.resize=resizeEndSlice,
+	.remap=NopRemap,
 	.free=freeEndSlice,
 };
 
 // Public API
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fba, uint8_t* buffer, size_t capacity)
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* fixedbuffer, uint8_t* const buffer, const  size_t capacity)
 {
-	*fba = (FixedBufferAllocator){
+	*fixedbuffer = (FixedBufferAllocator){
 		.buffer=buffer,
-		.cursor={ 0 },
+		.index={ 0 },
 		.capacity=capacity,
 		.allocator={
-			.context=fba,
+			.context=fixedbuffer,
 			.vtable=&vtable,
 		},
 	};
 }
 
-void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fba)
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fixedbuffer)
 {
-	fba->cursor.index = 0;
-	fba->cursor.previous = 0;
+	fixedbuffer->index.current = 0;
+	fixedbuffer->index.previous = 0;
 }
 
 // Helpers
-static bool isEndSlice(const Allocator_Context_T(FixedBuffer) fba, const void* const memory)
+static bool isEndSlice(const FixedBufferContext fixedbuffer, const void* const memory)
 {
-	return (uint8_t*)memory == fba->buffer + fba->cursor.previous;
+	return (uint8_t*)memory == fixedbuffer->buffer + fixedbuffer->index.previous;
 }
