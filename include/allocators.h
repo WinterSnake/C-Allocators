@@ -90,7 +90,8 @@ typedef struct Allocator_Pool
 	Allocator allocator;
 } PoolAllocator;
 
-bool Allocator_StaticPool_Init(PoolAllocator* const pool, Allocator_Interface internal, size_t capacity, size_t count);
+bool Allocator_StaticPool_Init(PoolAllocator* const pool, Allocator_Interface internal, const size_t capacity, const size_t minCount);
+bool Allocator_DynamicPool_Init(PoolAllocator* const pool, Allocator_Interface internal, const size_t capacity, const size_t minCount);
 void Allocator_Pool_Reset(PoolAllocator* const pool);
 void Allocator_Pool_Deinit(PoolAllocator* const pool);
 

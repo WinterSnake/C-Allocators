@@ -66,3 +66,19 @@ void Allocator_Free(Allocator_Interface allocator, void* const memory)
 {
 	allocator->vtable->free(allocator->context, memory);
 }
+
+// Internal API
+void* Allocator_RawAlloc(Allocator_Interface allocator, size_t size)
+{
+	return allocator->vtable->alloc(allocator->context, size);
+}
+
+bool Allocator_RawResize(Allocator_Interface allocator, const void* const memory, size_t newSize)
+{
+	return allocator->vtable->resize(allocator->context, memory, newSize);
+}
+
+void* Allocator_RawRemap(Allocator_Interface allocator, const void* memory, size_t newSize)
+{
+	return allocator->vtable->remap(allocator->context, memory, newSize);
+}

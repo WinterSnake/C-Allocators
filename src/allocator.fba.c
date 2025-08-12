@@ -5,11 +5,12 @@
 	Written By: Ryan Smith
 */
 
+#include <stdio.h>
 #include "allocators.h"
 
 Make_Allocator_Context_T(FixedBufferAllocator) FixedBufferContext;
 
-static bool isEndSlice(const FixedBufferContext context, const void* const memory);
+static inline bool isEndSlice(const FixedBufferContext context, const void* const memory);
 
 // VTable
 static void* allocateSlice(Allocator_Context context, size_t size)
@@ -37,6 +38,9 @@ static bool resizeEndSlice(Allocator_Context context, const void* const memory, 
 {
 	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
 	if (isEndSlice(fixedbuffer, memory)) {
+		if (newSize > fixedbuffer->capacity - fixedbuffer->index.previous) {
+			return false;
+		}
 		fixedbuffer->index.current = fixedbuffer->index.previous + newSize;
 		return true;
 	}
@@ -82,7 +86,7 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fixedbuffer)
 }
 
 // Helpers
-static bool isEndSlice(const FixedBufferContext fixedbuffer, const void* const memory)
+static inline bool isEndSlice(const FixedBufferContext fixedbuffer, const void* const memory)
 {
 	return (uint8_t*)memory == fixedbuffer->buffer + fixedbuffer->index.previous;
 }
