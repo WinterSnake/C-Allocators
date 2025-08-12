@@ -71,7 +71,27 @@ typedef struct Allocator_FixedBuffer
 	Allocator allocator;
 } FixedBufferAllocator;
 
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* fixedbuffer, uint8_t* const buffer, const  size_t capacity);
-void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fixedbuffer);
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* const fixedbuffer, uint8_t* const buffer, const size_t capacity);
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fixedbuffer);
+
+// Pool
+struct AllocatorBlock_Pool
+{
+	bool is_free;
+	struct AllocatorBlock_Pool* next;
+};
+
+typedef struct Allocator_Pool
+{
+	struct AllocatorBlock_Pool* start;
+	size_t capacity;
+	size_t count;
+	const Allocator* internal;
+	Allocator allocator;
+} PoolAllocator;
+
+bool Allocator_StaticPool_Init(PoolAllocator* const pool, Allocator_Interface internal, size_t capacity, size_t count);
+void Allocator_Pool_Reset(PoolAllocator* const pool);
+void Allocator_Pool_Deinit(PoolAllocator* const pool);
 
 #endif
