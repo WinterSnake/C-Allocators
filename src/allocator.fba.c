@@ -5,7 +5,6 @@
 	Written By: Ryan Smith
 */
 
-#include <stdio.h>
 #include "allocators.h"
 
 Make_Allocator_Context_T(FixedBufferAllocator) FixedBufferContext;
