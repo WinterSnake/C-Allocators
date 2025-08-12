@@ -78,6 +78,7 @@ void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const fixedbuffer);
 struct AllocatorBlock_Pool
 {
 	bool is_free;
+	bool is_head;
 	struct AllocatorBlock_Pool* next;
 };
 

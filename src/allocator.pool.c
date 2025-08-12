@@ -52,16 +52,17 @@ static void* rentOrCreateChunk(Allocator_Context context, size_t size)
 		current = current->next;
 	}
 	// Create new chunks
-	size_t count_diff   = pool->count / 2;
-	size_t resize_diff  = count_diff * (HEADER_SIZE + pool->capacity);
-	size_t resize_total = pool->count * (HEADER_SIZE + pool->capacity) + resize_diff;
+	size_t count_diff    = pool->count / 2;
+	size_t resize_diff   = count_diff * (HEADER_SIZE + pool->capacity);
+	size_t current_total = pool->count * (HEADER_SIZE + pool->capacity);
+	size_t resize_total  = current_total + resize_diff;
 	void*  chunk_start;
 	// Try inline resizing (remap would invalidate previous handles)
 	if (!Allocator_RawResize(pool->internal, pool->start, resize_total)) {
-		// TODO: Allocate new block and flag for reset/deinit | return NULL on error
-		return NULL;
+		chunk_start = Allocator_RawAlloc(pool->internal, resize_diff);
+		if (chunk_start == NULL) return NULL;
 	} else {
-		chunk_start = (void*)pool->start + pool->count * (HEADER_SIZE + pool->capacity);
+		chunk_start = (void*)pool->start + current_total;
 	}
 	// Write new chunks
 	writeChunks(chunk_start, pool->capacity, count_diff);
@@ -70,6 +71,7 @@ static void* rentOrCreateChunk(Allocator_Context context, size_t size)
 	// Get next chunk and return
 	current = current->next;
 	current->is_free = false;
+	current->is_head = true;
 	return (void*)current + HEADER_SIZE;
 }
 
@@ -141,7 +143,25 @@ void Allocator_Pool_Reset(PoolAllocator* const pool)
 
 void Allocator_Pool_Deinit(PoolAllocator* const pool)
 {
-	Allocator_Free(pool->internal, pool->start);
+	// Reverse pool chunks
+	struct AllocatorBlock_Pool* current  = pool->start;
+	struct AllocatorBlock_Pool* previous = NULL;
+	struct AllocatorBlock_Pool* next;
+	while (current != NULL)
+	{
+		next = current->next;
+		current->next = previous;
+		previous = current;
+		current  = next;
+	}
+	// Free nodes from last alloc to init alloc
+	while (previous != NULL)
+	{
+		if (previous->is_head) {
+			Allocator_Free(pool->internal, previous);
+		}
+		previous = previous->next;
+	}
 }
 
 // Helpers
@@ -165,6 +185,7 @@ static inline bool initPool(PoolAllocator* const pool, const AllocatorVTable* vt
 			.vtable=vtable,
 		},
 	};
+	pool->start->is_head = true;
 	return true;
 }
 
@@ -175,6 +196,7 @@ static inline void writeChunks(void* startAddr, const size_t capacity, const siz
 		void* next_header_addr = header_addr + HEADER_SIZE + capacity;
 		struct AllocatorBlock_Pool header = {
 			.is_free=true,
+			.is_head=false,
 			.next=(i < count - 1 ? next_header_addr : NULL),
 		};
 		memcpy(header_addr, &header, HEADER_SIZE);
