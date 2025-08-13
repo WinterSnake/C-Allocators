@@ -9,83 +9,74 @@
 
 Make_Allocator_Context_T(FixedBufferAllocator) FixedBufferContext;
 
-static inline bool isEndSlice(const FixedBufferContext context, const void* const memory);
+extern Slice _InvalidSlice;
+extern void* _Allocator_AlignForward(void*, const size_t, ptrdiff_t*);
+extern void  _Allocator_SetError(AllocatorError*, const AllocatorError);
+
+static bool isLastSlice(FixedBufferContext context, const Slice* const memory);
+static bool ownsSlice(FixedBufferContext context, const Slice* const memory);
 
 // VTable
-static void* allocateSlice(Allocator_Context context, size_t size)
+static Slice allocateSlice(Allocator_Context context, const size_t length, const size_t alignment, AllocatorError* error)
 {
-	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
-	if (fixedbuffer->index.current + size > fixedbuffer->capacity) {
-		return NULL;
+	FixedBufferContext ctx = Allocator_Context_As(context, FixedBufferContext);
+	ptrdiff_t offset;
+	void* memory = _Allocator_AlignForward(ctx->buffer + ctx->index, alignment, &offset);
+	if (length + offset > ctx->capacity - ctx->index) {
+		_Allocator_SetError(error, AllocatorError_OutOfMemory);
+		return _InvalidSlice;
 	}
-	fixedbuffer->index.previous = fixedbuffer->index.current;
-	void* memory = fixedbuffer->buffer + fixedbuffer->index.current;
-	fixedbuffer->index.current += size;
-	return memory;
+	ctx->index += offset + length;
+	_Allocator_SetError(error, AllocatorError_None);
+	return (Slice){
+		.pointer=memory,
+		.length=length,
+		.offset=offset,
+	};
 }
 
-static size_t lengthOfEndSlice(Allocator_Context context, const void* const memory)
+static void freeLastSlice(Allocator_Context context, Slice* const memory, AllocatorError* error)
 {
-	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
-	if (isEndSlice(fixedbuffer, memory)) {
-		return fixedbuffer->index.current - fixedbuffer->index.previous;
+	FixedBufferContext ctx = Allocator_Context_As(context, FixedBufferContext);
+	if (!ownsSlice(ctx, memory) || !isLastSlice(ctx, memory)) {
+		_Allocator_SetError(error, AllocatorError_InvalidFree);
+		return;
 	}
-	return 0;
-}
-
-static bool resizeEndSlice(Allocator_Context context, const void* const memory, size_t newSize)
-{
-	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
-	if (isEndSlice(fixedbuffer, memory)) {
-		if (newSize > fixedbuffer->capacity - fixedbuffer->index.previous) {
-			return false;
-		}
-		fixedbuffer->index.current = fixedbuffer->index.previous + newSize;
-		return true;
-	}
-	return false;
-}
-
-extern void* NopRemap(Allocator_Context, const void*, size_t);
-
-static void freeEndSlice(Allocator_Context context, void* const memory)
-{
-	FixedBufferContext fixedbuffer = Allocator_Context_As(context, FixedBufferContext);
-	if (isEndSlice(fixedbuffer, memory)) {
-		fixedbuffer->index.current = fixedbuffer->index.previous;
-	}
+	_Allocator_SetError(error, AllocatorError_None);
+	ctx->index -= memory->offset + memory->length;
 }
 
 static const AllocatorVTable vtable = {
 	.alloc=allocateSlice,
-	.lengthOf=lengthOfEndSlice,
-	.resize=resizeEndSlice,
-	.remap=NopRemap,
-	.free=freeEndSlice,
+	.free=freeLastSlice,
 };
 
-// Public API
-void Allocator_FixedBuffer_Init(FixedBufferAllocator* fixedbuffer, uint8_t* const buffer, const  size_t capacity)
+// API
+void Allocator_FixedBuffer_Init(FixedBufferAllocator* const self, uint8_t* buffer, size_t capacity)
 {
-	*fixedbuffer = (FixedBufferAllocator){
+	*self = (FixedBufferAllocator){
 		.buffer=buffer,
-		.index={ 0 },
+		.index=0,
 		.capacity=capacity,
 		.allocator={
-			.context=fixedbuffer,
+			.context=self,
 			.vtable=&vtable,
 		},
 	};
 }
 
-void Allocator_FixedBuffer_Reset(FixedBufferAllocator* fixedbuffer)
+void Allocator_FixedBuffer_Reset(FixedBufferAllocator* const self)
 {
-	fixedbuffer->index.current = 0;
-	fixedbuffer->index.previous = 0;
+	self->index = 0;
 }
 
 // Helpers
-static inline bool isEndSlice(const FixedBufferContext fixedbuffer, const void* const memory)
+static bool isLastSlice(FixedBufferContext context, const Slice* const memory)
 {
-	return (uint8_t*)memory == fixedbuffer->buffer + fixedbuffer->index.previous;
+	return memory->pointer + memory->length == context->buffer + context->index;
+}
+
+static bool ownsSlice(FixedBufferContext context, const Slice* const memory)
+{
+	return (uint8_t*)memory->pointer >= context->buffer && (uint8_t*)memory->pointer < context->buffer + context->capacity;
 }
